@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	logger := log.New(os.Stdout, "MAIN: ", log.Ldate|log.Ltime|log.Lshortfile)
 	if err := godotenv.Load(); err != nil {
 		panic(err)
 	}
