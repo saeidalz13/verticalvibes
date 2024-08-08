@@ -30,7 +30,7 @@ type PasetoTokenManager struct {
 	publicKey  ed25519.PublicKey
 }
 
-func (ptm PasetoTokenManager) CreateToken(email string, duration time.Duration) (string, error) {
+func (ptm *PasetoTokenManager) CreateToken(email string, duration time.Duration) (string, error) {
 	return ptm.paseto.Sign(ptm.privateKey, PasetoPayload{
 		Email:              email,
 		IssueDateTime:      time.Now(),
@@ -38,10 +38,10 @@ func (ptm PasetoTokenManager) CreateToken(email string, duration time.Duration) 
 	}, nil)
 }
 
-func (ptm PasetoTokenManager) ValidateToken(token string) (PasetoPayload, error) {
+func (ptm *PasetoTokenManager) ValidateToken(token string) (PasetoPayload, error) {
 	pp := PasetoPayload{}
-	if err := ptm.paseto.Verify(token, ptm.publicKey, pp, nil); err != nil {
-		return pp, nil
+	if err := ptm.paseto.Verify(token, ptm.publicKey, &pp, nil); err != nil {
+		return pp, err
 	}
 
 	if pp.isExpired() {
@@ -51,18 +51,18 @@ func (ptm PasetoTokenManager) ValidateToken(token string) (PasetoPayload, error)
 	return pp, nil
 }
 
-func newPasetoTokenManager(publicKey ed25519.PublicKey, privateKey ed25519.PrivateKey) PasetoTokenManager {
-	return PasetoTokenManager{
+func newPasetoTokenManager(publicKey ed25519.PublicKey, privateKey ed25519.PrivateKey) *PasetoTokenManager {
+	return &PasetoTokenManager{
 		paseto:     paseto.NewV2(),
 		privateKey: privateKey,
 		publicKey:  publicKey,
 	}
 }
 
-func BuildTokenManager() (PasetoTokenManager, error) {
+func BuildTokenManager() (*PasetoTokenManager, error) {
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return PasetoTokenManager{}, err
+		return nil, err
 	}
 
 	return newPasetoTokenManager(publicKey, privateKey), nil

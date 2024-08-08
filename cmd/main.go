@@ -7,6 +7,7 @@ import (
     
 	"github.com/joho/godotenv"
 	mw "github.com/saeidalz13/verticalvibes/middlewares"
+	"github.com/saeidalz13/verticalvibes/token"
 	"github.com/saeidalz13/verticalvibes/routes"
 )
 
@@ -16,10 +17,16 @@ func main() {
 		panic(err)
 	}
 
+	tokenManager, err := token.BuildTokenManager()
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
 	mux := http.NewServeMux()
     routes.Setup(mux)
+	middleWare := mw.NewMiddlewareHanlder(logger, tokenManager)
 
-	wrappedMux := mw.LogRequests(mux, logger)
+	wrappedMux := middleWare.Chain(mux)
 
 	hostname := os.Getenv("HOSTNAME")
 	port := os.Getenv("PORT")
