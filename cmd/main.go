@@ -22,16 +22,18 @@ func main() {
 		logger.Fatalln(err)
 	}
 
+	// Setting up multiplexer
 	mux := http.NewServeMux()
     routes.Setup(mux)
-	middleWare := mw.NewMiddlewareHanlder(logger, tokenManager)
 
+	// Applying chains of middleware and wrapping mux
+	middleWare := mw.NewMiddlewareHanlder(logger, tokenManager)
 	wrappedMux := middleWare.Chain(mux)
 
+	// Preparing server struct
 	hostname := os.Getenv("HOSTNAME")
 	port := os.Getenv("PORT")
 	addr := hostname + ":" + port
-
 	server := &http.Server{
 		Addr:    addr,
 		Handler: wrappedMux,
